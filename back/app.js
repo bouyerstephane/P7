@@ -1,6 +1,7 @@
 const express = require("express");
 const helmet = require("helmet");
 const bodyParser = require("body-parser");
+const limiter = require("./middleware/rateLimiter")
 
 const userRoutes = require("./routes/user");
 const forumRoutes = require("./routes/forum");
@@ -17,7 +18,7 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.json());
 
-app.use("/api/auth", userRoutes);
+app.use("/api/auth", limiter, userRoutes);
 app.use("/api/forum", forumRoutes);
 
 module.exports = app;
