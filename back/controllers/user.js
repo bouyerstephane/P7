@@ -1,25 +1,122 @@
-const bcrypt = require("bcrypt")
-const db = require('../db').mysql_pool;
+const bcrypt = require('bcrypt')
+const db = require('../db');
+const jwt = require('jsonwebtoken');
 
+const passwordValidator = require('password-validator');
+const schema = new passwordValidator();
+schema
+    .is().min(4)         //min 4 caractères
+    .is().max(20)      //max 20 caractères
+    //.has().digits(1)   // min 1 chiffre
+    .has().not().spaces()   // ne doit pas contenir d'espace
+//.has().symbols(1)    // min 1 caractère spécial
 
 //création d'un nouvel utilisateur
 exports.signup = (req, res) => {
-    const firstName = req.body.firstName;
-    const lastName = req.body.lastName;
-    const pseudo = req.body.pseudo;
-    const email = req.body.email;
-    bcrypt.hash(req.body.password, 10)
-        .then(hash => {
-            const password = hash;
-
-            db.getConnection((err, connection) => {
-                if (err) throw err;
-                connection.query("INSERT INTO users SET ?",{firstName: firstName, lastName: lastName, pseudo: pseudo, email: email, password: password}, (err, rows) => {
-                    if (err) console.log(err);
-                    console.log(rows);
-                });
-                connection.release();
+    const {firstName, lastName, pseudo, email} = req.body;
+    // vérification et encryptage du mot de passe
+    if (schema.validate(req.body.password)) {
+        bcrypt.hash(req.body.password, 10)
+            .then(password => {
+                db.getConnection((error, connection) => {
+                    if (error) {
+                        res.status(500).json({error})
+                    } else {
+                        // insertion du nouvel utilisateur
+                        connection.query('INSERT INTO users SET ?', {
+                            firstName,
+                            lastName,
+                            pseudo,
+                            email,
+                            password
+                        }, (error) => {
+                            if (error) {
+                                res.status(400).json({'error': error.sqlMessage})
+                            } else {
+                                res.status(201).json({'message': 'compte crée !'})
+                            }
+                        })
+                    }
+                    connection.release();
+                })
             })
-        })
-    res.status(200).json({message: 'success'})
+    }else {
+        res.status(400).json({"error": "veuillez rentrer un mot de passe valide"})
+    }
 };
+
+exports.login = (req, res) => {
+    const {userId, password} = req.body;
+    db.getConnection((error, connection) => {
+        if (error) {
+            res.status(500).json({error})
+        } else {
+            // récuperation de l'utilisateur
+            connection.query('SELECT * from users WHERE userId = ?', [userId], (error, rows) => {
+                    if (error) {
+                        res.status(400).json({error})
+                    } else if (!rows[0]) {
+                        res.status(404).json({'error': 'utilisateur non trouvé'})
+                    } else {
+                        // vérification du mot de passe encrypté
+                        bcrypt.compare(password, rows[0].password)
+                            .then(valid => {
+                                if (!valid) {
+                                    res.status(401).json({'error': 'Mot de passe incorrect !'});
+                                } else {
+                                    res.status(200).json({
+                                        // retourne l'id utilisateur, et un token encodé
+                                        userId: rows[0].userId,
+                                        token: jwt.sign(
+                                            {userId: rows[0].userId},
+                                            'Tokken_secret',
+                                            {expiresIn: '12h'}
+                                        )
+                                    })
+                                }
+                            })
+                    }
+                }
+            )
+        }
+        connection.release()
+    })
+}
+
+// suppression d'un compte
+exports.destroy = (req, res) => {
+    const {userId, password} = req.body;
+                db.getConnection((error, connection) => {
+                if (error) {
+                    res.status(500).json({error})
+                } else {
+                    // récuperation de l'utilisateur et vérification du mot de passe
+                    connection.query('SELECT password from users WHERE userId = ?', [userId], (error, rows) => {
+                        if (error) {
+                            res.status(500).json({error})
+                        } else if (!rows[0]) {
+                            res.status(404).json({'error': 'utilisateur non trouvé'})
+                        } else {
+                            bcrypt.compare(password, rows[0].password)
+                                .then(valid => {
+                                    if (!valid) {
+                                        res.status(401).json({'error': 'Mot de passe incorrect !'});
+                                    } else {
+                                        // destruction du compte
+                                        connection.query('DELETE FROM users WHERE userId = ?', [userId], (error) => {
+                                            if (error) {
+                                                res.status(500).json({error});
+                                            } else {
+                                                res.status(200).json({"message": "compte supprimé"})
+                                            }
+                                        })
+                                    }
+                                })
+                        }
+                    })
+                }
+        connection.release()
+    })
+}
+
+
