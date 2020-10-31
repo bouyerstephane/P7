@@ -40,19 +40,19 @@ exports.signup = (req, res) => {
                     connection.release();
                 })
             })
-    }else {
+    } else {
         res.status(400).json({"error": "veuillez rentrer un mot de passe valide"})
     }
 };
 
 exports.login = (req, res) => {
-    const {userId, password} = req.body;
+    const {pseudo, password} = req.body;
     db.getConnection((error, connection) => {
         if (error) {
             res.status(500).json({error})
         } else {
             // récuperation de l'utilisateur
-            connection.query('SELECT * from users WHERE userId = ?', [userId], (error, rows) => {
+            connection.query('SELECT * from users WHERE pseudo = ?', [pseudo], (error, rows) => {
                     if (error) {
                         res.status(400).json({error})
                     } else if (!rows[0]) {
@@ -86,35 +86,35 @@ exports.login = (req, res) => {
 // suppression d'un compte
 exports.destroy = (req, res) => {
     const {userId, password} = req.body;
-                db.getConnection((error, connection) => {
+    db.getConnection((error, connection) => {
+        if (error) {
+            res.status(500).json({error})
+        } else {
+            // récuperation de l'utilisateur et vérification du mot de passe
+            connection.query('SELECT password from users WHERE userId = ?', [userId], (error, rows) => {
                 if (error) {
                     res.status(500).json({error})
+                } else if (!rows[0]) {
+                    res.status(404).json({'error': 'utilisateur non trouvé'})
                 } else {
-                    // récuperation de l'utilisateur et vérification du mot de passe
-                    connection.query('SELECT password from users WHERE userId = ?', [userId], (error, rows) => {
-                        if (error) {
-                            res.status(500).json({error})
-                        } else if (!rows[0]) {
-                            res.status(404).json({'error': 'utilisateur non trouvé'})
-                        } else {
-                            bcrypt.compare(password, rows[0].password)
-                                .then(valid => {
-                                    if (!valid) {
-                                        res.status(401).json({'error': 'Mot de passe incorrect !'});
+                    bcrypt.compare(password, rows[0].password)
+                        .then(valid => {
+                            if (!valid) {
+                                res.status(401).json({'error': 'Mot de passe incorrect !'});
+                            } else {
+                                // destruction du compte
+                                connection.query('DELETE FROM users WHERE userId = ?', [userId], (error) => {
+                                    if (error) {
+                                        res.status(500).json({error});
                                     } else {
-                                        // destruction du compte
-                                        connection.query('DELETE FROM users WHERE userId = ?', [userId], (error) => {
-                                            if (error) {
-                                                res.status(500).json({error});
-                                            } else {
-                                                res.status(200).json({"message": "compte supprimé"})
-                                            }
-                                        })
+                                        res.status(200).json({"message": "compte supprimé"})
                                     }
                                 })
-                        }
-                    })
+                            }
+                        })
                 }
+            })
+        }
         connection.release()
     })
 }
