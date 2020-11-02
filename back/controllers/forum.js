@@ -14,10 +14,11 @@ exports.displayAll = (req, res) => {
                 } else if (!rows[0]) {
                     res.status(404).json({"error": "utilisateur non trouvé"})
                 } else {
-                    connection.query('SELECT * FROM forum', (error, rows) => {
+                    connection.query('SELECT postId, forum.userId, post, DATE_FORMAT(date, "%d/%m/%Y à %H:%i:%s") AS date,DATE_FORMAT(lastModif, "%d/%m/%Y à %H:%i:%s") AS lastModif, users.pseudo FROM forum INNER JOIN users on forum.userId = users.userId ORDER BY date DESC', (error, rows) => {
                         if (error) {
                             res.status(500).json({"error": error.sqlMessage})
                         } else {
+                            //console.log(rows[0].date)
                             res.status(200).json({"response": rows})
                         }
                     })
@@ -30,6 +31,7 @@ exports.displayAll = (req, res) => {
 
 // afficher le post selectionné et les commentaires correspondants
 exports.displayOne = (req, res) => {
+    console.log(req.body)
     const {userId, postId} = req.body
     db.getConnection((error, connection) => {
         if (error) {
@@ -43,15 +45,15 @@ exports.displayOne = (req, res) => {
                     res.status(404).json({"error": 'utilisateur non trouvé'})
                 } else {
                     //récuperation du post
-                    connection.query('SELECT * FROM forum WHERE postId = ? ', [postId], (error, rows) => {
+                    connection.query('SELECT postId, post, date, lastModif, forum.userId, users.pseudo  FROM forum INNER JOIN users on forum.userId = users.userId WHERE postId = ? ', [postId], (error, rows) => {
                         if (error) {
                             res.status(404).json({"error": "post non trouvé"})
                         } else {
-                            const post = rows;
+                            const post = rows[0];
                             //récuperation des commentaires correspondants au post
-                            connection.query('SELECT * FROM forum_commentary WHERE postId = ?', [postId], (error, rows) => {
+                            connection.query('SELECT commentaryId, commentary, postId, forum_commentary.userId, DATE_FORMAT(date, "%d/%m/%Y à %H:%i:%s") AS date, DATE_FORMAT(lastModif, "%d/%m/%Y à %H:%i:%s") AS lastModif, users.pseudo FROM forum_commentary INNER JOIN users on forum_commentary.userId = users.userId WHERE postId = ? ORDER BY date DESC', [postId], (error, rows) => {
                                 if (error) {
-                                    res.status(404).json({"error": 'post non trouvé'})
+                                    res.status(404).json({"error": 'post non trouvé !'})
                                 } else {
                                     res.status(200).json({post, "commentary": rows})
                                 }
@@ -90,7 +92,7 @@ exports.submit = (req, res) => {
                             if (error) {
                                 res.status(400).json({error})
                             } else {
-                                res.status(200).json({"post": "post ajouté"})
+                                res.status(200).json({"message": "post ajouté"})
                             }
                         })
 
@@ -134,7 +136,7 @@ exports.submitComm = (req, res) => {
                                     if (error) {
                                         res.status(500).json({"error": error.sqlMessage})
                                     } else {
-                                        res.status(200).json({"post": "commentaire envoyé"})
+                                        res.status(200).json({"message": "commentaire envoyé"})
                                     }
                                 })
                             }
@@ -149,6 +151,7 @@ exports.submitComm = (req, res) => {
 
 //modification d'un post ou d'un commentaire
 exports.modify = (req, res) => {
+    console.log(req.body)
     const {userId, postId, commentaryId, post, commentary} = req.body
     if (post && commentary) {
         res.status(400).json({"error": "veuillez ne modifier qu'un seul message à la fois"})

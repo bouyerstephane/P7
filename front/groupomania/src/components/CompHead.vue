@@ -1,26 +1,57 @@
 <template>
   <div id="header">
-    <img src="../../public/icon-left-font-PS.png" alt="logo">
-    <div id="nav">
+    <router-link to="/"><img src="../../public/icon-left-font-PS.png" alt="logo"></router-link>
+
+    <div v-if='!user.userId' id="nav">
       <router-link to="/">Login</router-link>
       |
       <router-link to="/signup">Signup</router-link>
     </div>
+    <div v-else id="nav">
+      <router-link to="/forum">Forum</router-link>
+      |
+      <router-link to="/account">Mon Compte</router-link>
+      |
+      <router-link @click.native="disconnect()" to="/">Déconnexion</router-link>
+
+    </div>
   </div>
-  <hr>
 </template>
 
 <script>
-export default {}
+import vuex from "vuex"
+
+export default {
+
+  data() {
+    return {
+      connected: false
+    }
+  },
+  methods: {
+    ...vuex.mapActions([
+          "disconnect"
+        ]
+    )
+  },
+  computed: {
+    ...vuex.mapGetters([
+      'user'
+    ])
+  },
+
+}
 </script>
 
 <style>
+h1 {
+  color: #0024a0;
+}
 
 #header {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
-  background: #ffffff;
 }
 
 #header img {

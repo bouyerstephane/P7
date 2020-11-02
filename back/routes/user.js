@@ -6,6 +6,6 @@ const userCtrl = require('../controllers/user');
 
 router.post('/signup', userCtrl.signup);
 router.post('/login', userCtrl.login);
-router.delete('/destroy', token, userCtrl.destroy);
+router.delete('/destroy', userCtrl.destroy);
 
 module.exports = router;

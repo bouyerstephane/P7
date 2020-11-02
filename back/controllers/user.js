@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt')
 const db = require('../db');
 const jwt = require('jsonwebtoken');
 
+
 const passwordValidator = require('password-validator');
 const schema = new passwordValidator();
 schema
@@ -66,11 +67,15 @@ exports.login = (req, res) => {
                                 } else {
                                     res.status(200).json({
                                         // retourne l'id utilisateur, et un token encodé
-                                        userId: rows[0].userId,
+
+                                        user: {
+                                            userId: rows[0].userId,
+                                            isAdmin: rows[0].isAdmin
+                                        },
                                         token: jwt.sign(
                                             {userId: rows[0].userId},
-                                            'Tokken_secret',
-                                            {expiresIn: '12h'}
+                                            'Token_secret',
+                                            {expiresIn: '6h'}
                                         )
                                     })
                                 }
@@ -85,6 +90,7 @@ exports.login = (req, res) => {
 
 // suppression d'un compte
 exports.destroy = (req, res) => {
+    console.log(req.body)
     const {userId, password} = req.body;
     db.getConnection((error, connection) => {
         if (error) {

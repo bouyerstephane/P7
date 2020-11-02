@@ -1,44 +1,60 @@
 <template>
   <div>
-    <h2>Connection</h2>
-
+    <h1>Connection</h1>
     <div id="form">
       <div>
         <label for="pseudo">Pseudo: </label>
-        <input id="pseudo" type="text" v-model=pseudo required>
+        <input id="pseudo" type="text" v-model=login.pseudo @keyup.enter=sendlog() required>
       </div>
       <div>
         <label for="password"> Mot de passe: </label>
-        <input id="password" type="password" required>
+        <input id="password" type="password" v-model=login.password @keyup.enter=sendlog() required>
       </div>
-      <input id="submit" type="submit" @click=test()>
+      <input id="submit" type="submit" @click=sendlog()>
     </div>
+    <p>{{ errormsg.message }}</p>
   </div>
 </template>
 
 <script>
+//import vue from "vue"
+import store from "../store/index"
+import vuex from "vuex"
+
 export default {
+  store: store,
   data() {
-    return {
-      pseudo: "",
-      password: ""
-    }
+    return {}
   },
   methods: {
-    test() {
-      console.log(this.pseudo)
-    }
-  },
+    ...vuex.mapActions({
+      login: "login"
+    }),
 
-  computed: {}
+    sendlog() {
+      this.login({"pseudo": this.login.pseudo, "password": this.login.password})
+      //location.reload()
+    }
+
+  },
+  computed: {
+    ...vuex.mapGetters([
+      'user',
+      'errormsg'
+    ])
+  },
+  beforeRouteEnter(route, from, next) {
+    if (!store.getters.user.userId) {
+      next()
+    } else {
+      next("/forum")
+    }
+  }
 }
 </script>
 
 
 <style scoped>
-h2 {
-  color: #0024a0;
-}
 
 #form {
   display: flex;

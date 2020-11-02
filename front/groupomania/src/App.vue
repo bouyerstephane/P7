@@ -1,7 +1,10 @@
 <template>
-  <compHead></compHead>
-  <router-view/>
-  <compFooter></compFooter>
+  <div id="app">
+    <compHead></compHead>
+    <hr>
+    <router-view/>
+    <compFooter></compFooter>
+  </div>
 
 
 </template>
