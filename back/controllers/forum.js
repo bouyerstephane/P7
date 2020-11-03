@@ -2,7 +2,8 @@ const db = require('../db');
 
 // affiche tout les posts
 exports.displayAll = (req, res) => {
-    const {userId} = req.body;
+    console.log(req.query.userId)
+    const userId = req.query.userId;
     db.getConnection((error, connection) => {
         if (error) {
             res.status(500).json({error})
@@ -14,7 +15,7 @@ exports.displayAll = (req, res) => {
                 } else if (!rows[0]) {
                     res.status(404).json({"error": "utilisateur non trouvé"})
                 } else {
-                    connection.query('SELECT postId, forum.userId, post, DATE_FORMAT(date, "%d/%m/%Y à %H:%i:%s") AS date,DATE_FORMAT(lastModif, "%d/%m/%Y à %H:%i:%s") AS lastModif, users.pseudo FROM forum INNER JOIN users on forum.userId = users.userId ORDER BY date DESC', (error, rows) => {
+                    connection.query('SELECT postId, forum.userId, post, DATE_FORMAT(date, "%d/%m/%Y à %H:%i:%s") AS formatedDate, DATE_FORMAT(lastModif, "%d/%m/%Y à %H:%i:%s") AS formatedLastModif, users.pseudo FROM forum INNER JOIN users on forum.userId = users.userId ORDER BY date DESC', (error, rows) => {
                         if (error) {
                             res.status(500).json({"error": error.sqlMessage})
                         } else {
@@ -32,7 +33,7 @@ exports.displayAll = (req, res) => {
 // afficher le post selectionné et les commentaires correspondants
 exports.displayOne = (req, res) => {
     console.log(req.body)
-    const {userId, postId} = req.body
+    const {userId, postId} = req.query
     db.getConnection((error, connection) => {
         if (error) {
             res.status(500).json({error})
@@ -45,13 +46,13 @@ exports.displayOne = (req, res) => {
                     res.status(404).json({"error": 'utilisateur non trouvé'})
                 } else {
                     //récuperation du post
-                    connection.query('SELECT postId, post, date, lastModif, forum.userId, users.pseudo  FROM forum INNER JOIN users on forum.userId = users.userId WHERE postId = ? ', [postId], (error, rows) => {
+                    connection.query('SELECT postId, post, DATE_FORMAT(date, "%d/%m/%Y à %H:%i:%s") AS formatedDate, DATE_FORMAT(lastModif, "%d/%m/%Y à %H:%i:%s") AS formatedLastModif, forum.userId, users.pseudo  FROM forum INNER JOIN users on forum.userId = users.userId WHERE postId = ? ', [postId], (error, rows) => {
                         if (error) {
                             res.status(404).json({"error": "post non trouvé"})
                         } else {
                             const post = rows[0];
                             //récuperation des commentaires correspondants au post
-                            connection.query('SELECT commentaryId, commentary, postId, forum_commentary.userId, DATE_FORMAT(date, "%d/%m/%Y à %H:%i:%s") AS date, DATE_FORMAT(lastModif, "%d/%m/%Y à %H:%i:%s") AS lastModif, users.pseudo FROM forum_commentary INNER JOIN users on forum_commentary.userId = users.userId WHERE postId = ? ORDER BY date DESC', [postId], (error, rows) => {
+                            connection.query('SELECT commentaryId, commentary, postId, forum_commentary.userId, DATE_FORMAT(date, "%d/%m/%Y à %H:%i:%s") AS formatedDate, DATE_FORMAT(lastModif, "%d/%m/%Y à %H:%i:%s") AS formatedLastModif, users.pseudo FROM forum_commentary INNER JOIN users on forum_commentary.userId = users.userId WHERE postId = ? ORDER BY date DESC', [postId], (error, rows) => {
                                 if (error) {
                                     res.status(404).json({"error": 'post non trouvé !'})
                                 } else {
@@ -229,6 +230,7 @@ exports.modify = (req, res) => {
 
 // destruction d'un post ou d'un commentaire
 exports.destroy = (req, res) => {
+    console.log("destroy: " + req.body)
     const {userId, postId, commentaryId} = req.body;
     if (postId && commentaryId) {
         res.status(400).json({"error": "vous ne pouvez supprimer qu'un seul message à la fois"})

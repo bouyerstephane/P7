@@ -22,20 +22,14 @@ export default new Vuex.Store({
             token: null,
             isAdmin: 0
         },
-        account: {
-            firstName: "",
-            lastName: "",
-            pseudo: "",
-            email: "",
-            password: ""
-        },
-        errormsg: {
-            message: ""
-        }
+        getUser: {},
+
     },
     plugins: [createPersistedState({
         paths: ['user'],
+
         storage: {
+            key: "test",
             getItem: key => cookie.get(key),
             setItem: (key, value) => cookie.set(key, value, {expires: 1 / 48}),
             removeItem: key => cookie.remove(key)
@@ -50,19 +44,21 @@ export default new Vuex.Store({
                 token: user.token
             }
         },
-        ERRORMSG(state, error) {
-            state.errormsg = {
-                message: error
-            }
+        GETUSER(state, user) {
+            state.getUser = user
         },
+
         GETFORUM(state, posts) {
             state.forum.posts.push(posts)
+        },
+        EMPTYPOST(state) {
+            state.forum.posts = []
+            state.forumCommentary.commentaries = []
         },
         GETCOMMENTARY(state, commentary) {
             state.forumCommentary.commentaries.push(commentary)
         },
         GETCOMMENTARYPOST(state, post) {
-            state.forumCommentary.commentaries = []
             state.forumCommentary.post = post
         },
         DISCONNECT(state) {
@@ -78,14 +74,11 @@ export default new Vuex.Store({
             })
                 .then(res => {
                     store.commit('LOGIN', res.data)
-                    store.commit('ERRORMSG', null)
                     console.log(res.data.user.userId)
                     router.push('/forum')
-                    //console.log(res.data.user);
                 })
                 .catch(error => {
-                    store.commit('ERRORMSG', error.response.data.error)
-                    console.log(error);
+                    console.log(error.response.data);
                 });
         },
         signup: (store, account) => {
@@ -97,19 +90,54 @@ export default new Vuex.Store({
                 password: account.password,
 
             })
-                .then(res => {
-                    store.commit('ERRORMSG', null)
+                .then(() => {
                     store.dispatch('login', {"pseudo": account.pseudo, "password": account.password})
-                    console.log(res)
                 })
                 .catch(error => {
-                    store.commit('ERRORMSG', error.response.data.error)
-                    console.log(error)
+                    console.log(error.response.data)
                 })
+        },
+        getUser: (store, userId) => {
+            axios.get('http://localhost:3000/api/auth/getUser', {
+                params: {
+                    userId
+                },
+                headers: {
+                    'Authorization': 'Bearer ' + store.state.user.token
+                }
+            }).then(res => {
+                store.commit('GETUSER', res.data.user)
+            }).catch(error => {
+                console.log(error.response.data)
+            })
+        },
+        modifyUser: (store, request) => {
+            axios.put('http://localhost:3000/api/auth/modifyUser', {
+                userId: request.userId,
+                firstName: request.firstName,
+                lastName: request.lastName,
+                pseudo: request.pseudo,
+                email: request.email,
+                modifyPassword: request.modifyPassword,
+                password: request.password
+            }, {
+                headers: {
+                    'Authorization': 'Bearer ' + store.state.user.token
+                }
+            }).then(res => {
+                store.dispatch('getUser', request.userId)
+                console.log(res)
+            }).catch(error => {
+                store.dispatch('getUser', request.userId)
+                console.log(error.response.data)
+            })
         },
         accountDelete: (store, request) => {
             if (confirm("Voulez vous vraiment supprimer votre compte ?")) {
                 axios.delete("http://localhost:3000/api/auth/destroy", {
+                    headers: {
+                        'Authorization': 'Bearer ' + store.state.user.token
+                    },
                     data: {
                         userId: request.userId,
                         password: request.password
@@ -118,50 +146,50 @@ export default new Vuex.Store({
                     store.dispatch('disconnect')
                     console.log(res)
                 }).catch(error => {
-                    console.log(error)
+                    console.log(error.response.data)
                 })
             }
         },
         getForum: (store, userId) => {
-            axios.post('http://localhost:3000/api/forum/displayAll', {
-                userId
-            }, {
+            axios.get('http://localhost:3000/api/forum/displayAll', {
+                params: {
+                    userId: userId
+                },
                 headers: {
                     'Authorization': 'Bearer ' + store.state.user.token
                 }
             })
                 .then(res => {
-                    if (store.state.forum.posts.length === 0) {
-                        res.data.response.map(forum => {
-                            store.commit('GETFORUM', forum)
-                        })
-                    }
+                    store.commit('EMPTYPOST')
+                    res.data.response.map(forum => {
+                        store.commit('GETFORUM', forum)
+                    })
+
                 }).catch(error => {
-                console.log(error)
+                console.log(error.response.data)
             })
         },
         getCommentary: (store, request) => {
-            axios.post('http://localhost:3000/api/forum/displayOne', {
-                userId: request.userId,
-                postId: request.postId
-            }, {
+            axios.get('http://localhost:3000/api/forum/displayOne', {
+                params: {
+                    userId: request.userId,
+                    postId: request.postId
+                },
                 headers: {
                     'Authorization': 'Bearer ' + store.state.user.token
                 }
+
+
             }).then(res => {
-                console.log(res.data)
+                store.commit('EMPTYPOST')
                 store.commit("GETCOMMENTARYPOST", res.data.post)
                 res.data.commentary.map(commentary => {
                     store.commit("GETCOMMENTARY", commentary)
                 })
 
             }).catch(error => {
-                console.log(error)
+                console.log(error.response.data)
             })
-        },
-        disconnect: (store) => {
-            store.commit("DISCONNECT")
-            location.reload()
         },
         deletePost: (store, request) => {
             if (confirm("voulez vous supprimer le post ?")) {
@@ -176,12 +204,21 @@ export default new Vuex.Store({
                     }
                 })
                     .then(res => {
-                        location.reload()
+                        if (request.commentaryId) {
+                            store.dispatch('getCommentary', {
+                                userId: request.userId,
+                                postId: request.commentaryPostId
+                            })
+                            console.log(request.commentaryId)
+                        } else {
+                            store.dispatch('getForum', request.userId)
+                        }
+
                         console.log(res)
                     })
                     .catch(error => {
-                        alert(error.response.data.error)
-                        console.log(error)
+                        alert(error.response.data)
+                        console.log(error.response.data)
                     })
             }
 
@@ -198,10 +235,11 @@ export default new Vuex.Store({
                 }
             )
                 .then(res => {
-                    location.reload()
+                    store.commit('EMPTYPOST')
+                    store.dispatch('getForum', request.userId)
                     console.log(res)
                 }).catch(error => {
-                console.log(error)
+                console.log(error.response.data)
             })
         },
         addCommentary(store, request) {
@@ -216,10 +254,11 @@ export default new Vuex.Store({
                 }
             })
                 .then(res => {
-                    location.reload()
+                    store.commit('EMPTYPOST')
+                    store.dispatch('getCommentary', {userId: request.userId, postId: request.postId})
                     console.log(res)
                 }).catch(error => {
-                console.log(error)
+                console.log(error.response.data)
             })
         },
         modifyPost(store, request) {
@@ -234,16 +273,28 @@ export default new Vuex.Store({
                     'Authorization': 'Bearer ' + store.state.user.token
                 }
             }).then(res => {
+                console.log(request.commentaryPostId)
+                if (request.commentaryId) {
+                    store.commit('EMPTYPOST')
+                    store.dispatch('getCommentary', {userId: request.userId, postId: request.commentaryPostId})
+                }
                 console.log(res)
             }).catch(error => {
-                console.log(error)
+                store.commit('EMPTYPOST')
+                store.dispatch('getCommentary', {userId: request.userId, postId: request.commentaryPostId})
+                console.log(error.response.data)
             })
-        }
+        },
+
+        disconnect: (store) => {
+            store.commit("DISCONNECT")
+            location.reload()
+        },
 
     },
     getters: {
         user: state => state.user,
-        errormsg: state => state.errormsg,
+        getUser: state => state.getUser,
         account: state => state.account,
         forum: state => state.forum,
         forumCommentary: state => state.forumCommentary

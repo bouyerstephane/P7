@@ -15,34 +15,40 @@ schema
 //création d'un nouvel utilisateur
 exports.signup = (req, res) => {
     const {firstName, lastName, pseudo, email} = req.body;
-    // vérification et encryptage du mot de passe
-    if (schema.validate(req.body.password)) {
-        bcrypt.hash(req.body.password, 10)
-            .then(password => {
-                db.getConnection((error, connection) => {
-                    if (error) {
-                        res.status(500).json({error})
-                    } else {
-                        // insertion du nouvel utilisateur
-                        connection.query('INSERT INTO users SET ?', {
-                            firstName,
-                            lastName,
-                            pseudo,
-                            email,
-                            password
-                        }, (error) => {
-                            if (error) {
-                                res.status(400).json({'error': error.sqlMessage})
-                            } else {
-                                res.status(201).json({'message': 'compte crée !'})
-                            }
-                        })
-                    }
-                    connection.release();
-                })
-            })
+    if (!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+        res.status(400).json({"error": "email invalide"})
+    } else if (!(/^[a-zA-Z ]+$/.test(firstName)) || !(/^[a-zA-Z ]+$/.test(lastName))) {
+        res.status(400).json({"error": "Nom ou prénom invalide"})
     } else {
-        res.status(400).json({"error": "veuillez rentrer un mot de passe valide"})
+        // vérification et encryptage du mot de passe
+        if (schema.validate(req.body.password)) {
+            bcrypt.hash(req.body.password, 10)
+                .then(password => {
+                    db.getConnection((error, connection) => {
+                        if (error) {
+                            res.status(500).json({error})
+                        } else {
+                            // insertion du nouvel utilisateur
+                            connection.query('INSERT INTO users SET ?', {
+                                firstName,
+                                lastName,
+                                pseudo,
+                                email,
+                                password
+                            }, (error) => {
+                                if (error) {
+                                    res.status(400).json({'error': "invalid"})
+                                } else {
+                                    res.status(201).json({'message': 'compte crée !'})
+                                }
+                            })
+                        }
+                        connection.release();
+                    })
+                })
+        } else {
+            res.status(400).json({"error": "veuillez rentrer un mot de passe valide"})
+        }
     }
 };
 
@@ -86,6 +92,104 @@ exports.login = (req, res) => {
         }
         connection.release()
     })
+}
+
+exports.getUser = (req, res) => {
+    const userId = req.query.userId
+    db.getConnection((error, connection) => {
+        if (error) {
+            res.status(500).json({error})
+        } else {
+            // récuperation de l'utilisateur
+            connection.query('SELECT firstName, lastName, pseudo, email from users WHERE userId = ?', [userId], (error, rows) => {
+                if (error) {
+                    res.status(500).json({error})
+                } else if (!rows[0]) {
+                    res.status(404).json({'error': 'utilisateur non trouvé'})
+                } else {
+                    res.status(200).json({"user": rows[0]})
+                }
+
+            })
+        }
+        connection.release()
+    })
+}
+
+exports.modifyUser = (req, res) => {
+    console.log(req.body)
+    const {userId, firstName, lastName, pseudo, email, modifyPassword, password} = req.body
+    if (!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+        res.status(400).json({"error": "email invalide"})
+    } else if (!(/^[a-zA-Z ]+$/.test(firstName)) || !(/^[a-zA-Z ]+$/.test(lastName))) {
+        res.status(400).json({"error": "Nom ou prénom invalide"})
+    } else {
+        if (firstName === "" || lastName === "" || pseudo === "" || email === "") {
+            res.status(400).json({"error": "Champs requis vide"})
+        } else {
+            db.getConnection((error, connection) => {
+                if (error) {
+                    res.status(500).json({error})
+                } else {
+                    // récuperation de l'utilisateur
+                    connection.query('SELECT * from users WHERE userId = ?', [userId], (error, rows) => {
+                        if (error) {
+                            res.status(400).json({error})
+                        } else if (!rows[0]) {
+                            res.status(404).json({'error': 'utilisateur non trouvé'})
+                        } else {
+                            // vérification du mot de passe encrypté
+                            bcrypt.compare(password, rows[0].password)
+                                .then(valid => {
+                                    if (!valid) {
+                                        res.status(401).json({'error': 'Mot de passe incorrect !'});
+                                    } else {
+                                        if (modifyPassword) {
+                                            if (schema.validate(modifyPassword)) {
+                                                bcrypt.hash(modifyPassword, 10)
+                                                    .then(passwordHash => {
+                                                        connection.query('UPDATE users SET ? WHERE userId = ?', [{
+                                                            firstName,
+                                                            lastName,
+                                                            pseudo,
+                                                            email,
+                                                            password: passwordHash
+                                                        }, userId], (error, rows) => {
+                                                            if (error) {
+                                                                res.status(400).json(error)
+                                                            } else {
+                                                                res.status(200).json({"message": "compte modifié"})
+                                                            }
+                                                        })
+                                                    })
+                                            } else {
+                                                res.status(400).json({"error": "veuillez rentrer un mot de passe valide"})
+                                            }
+                                        } else {
+                                            connection.query('UPDATE users SET ? WHERE userId = ?', [{
+                                                firstName,
+                                                lastName,
+                                                pseudo,
+                                                email
+                                            }, userId], (error, rows) => {
+                                                if (error) {
+                                                    res.status(400).json(error)
+                                                } else {
+                                                    res.status(200).json({"message": "compte modifié"})
+                                                }
+                                            })
+                                        }
+
+                                    }
+                                })
+                        }
+                    })
+                }
+                connection.release()
+            })
+        }
+    }
+
 }
 
 // suppression d'un compte

@@ -4,6 +4,8 @@
       <h1>Commentaires</h1>
       <div v-if="!editing">
         <p>{{ forumCommentary.post.post }}</p>
+        <p>Ajouté par {{ forumCommentary.post.pseudo }} le {{ forumCommentary.post.formatedDate }}</p>
+        <p v-if="forumCommentary.post.formatedLastModif">Modifié le {{ forumCommentary.post.formatedLastModif }}</p>
         <button v-if="user.userId === forumCommentary.post.userId || user.isAdmin === 1"
                 @click="editMessage(forumCommentary.post.post)">Modifier
         </button>
@@ -13,8 +15,11 @@
                @keyup.esc="resetMessage()" @keyup.enter="validEditMessage()">
         <button @click="validEditMessage()">valider</button>
       </div>
-      <textarea name="addCommentary" id="" cols="30" rows="10" v-model="commentary"></textarea>
-      <button @click="addCommentary({userId: user.userId, postId: $route.params.id.split(':')[1], commentary})">
+      <textarea name="addCommentary" id="" cols="30" rows="5" v-model="commentary"
+                placeholder="Ajouter un commentaire"
+                @keyup.enter="addCommentary({userId: user.userId, postId: $route.params.id.split(':')[1], commentary}); commentary ='' "></textarea>
+      <button
+          @click="addCommentary({userId: user.userId, postId: $route.params.id.split(':')[1], commentary}); commentary ='' ">
         Ajouter
       </button>
     </div>
@@ -23,10 +28,10 @@
     <div id="forum" v-for="commentary in forumCommentary.commentaries" :key="commentary.id">
       <div v-if="editingCommentary !== commentary.commentaryId">
         <p>{{ commentary.commentary }}</p>
-        <p>Ajouté par: {{ commentary.pseudo }} le {{ commentary.date }}</p>
-        <p>Modifié le {{ commentary.lastModif }}</p>
+        <p>Ajouté par: {{ commentary.pseudo }} le {{ commentary.formatedDate }}</p>
+        <p v-if="commentary.formatedLastModif">Modifié le {{ commentary.formatedLastModif }}</p>
         <button v-if="user.userId === commentary.userId || user.isAdmin === 1 "
-                @click.stop="destroy({userId: user.userId, commentaryId: commentary.commentaryId})">
+                @click.stop="destroy({userId: user.userId, commentaryId: commentary.commentaryId ,commentaryPostId: $route.params.id.split(':')[1]})">
           supprimer
         </button>
         <button v-if="user.userId === commentary.userId || user.isAdmin === 1 "
@@ -37,9 +42,10 @@
       </div>
       <div v-else>
         <input name="test" id="edit" v-model="newCommentary"
-               @keyup.esc="editingCommentary = null" @keyup.enter="validEditCommentary()">
+               @keyup.esc="editingCommentary = null"
+               @keyup.enter="validEditCommentary(commentary.commentaryId, newCommentary)">
         <button
-            @click="validEditCommentary(commentary.commentaryId, newCommentary); commentary.commentary = newCommentary">
+            @click="validEditCommentary(commentary.commentaryId, newCommentary)">
           valider
         </button>
       </div>
@@ -84,20 +90,13 @@ export default {
       this.oldMessage = message;
     },
     validEditMessage() {
-      if (confirm("voulez vous valider la modification ?")) {
-        this.editing = null
-        this.sendModif(this.forumCommentary.post.postId, this.forumCommentary.post.post, "", "")
-      } else {
-        this.resetMessage()
-      }
+      this.editing = null
+      this.sendModif(this.forumCommentary.post.postId, this.forumCommentary.post.post, "", "")
     },
+
     validEditCommentary(commentaryId, commentary) {
-      if (confirm("voulez vous valider la modification ?")) {
-        this.editingCommentary = null
-        this.sendModif("", "", commentaryId, commentary)
-      } else {
-        this.editingCommentary = null
-      }
+      this.editingCommentary = null
+      this.sendModif("", "", commentaryId, commentary)
     },
     resetMessage() {
       this.editing = null
@@ -109,9 +108,11 @@ export default {
         postId,
         post,
         commentaryId,
-        commentary
+        commentary,
+        commentaryPostId: this.forumCommentary.post.postId
       })
     }
+
   },
   computed: {
     ...vuex.mapGetters([

@@ -4,29 +4,25 @@
     <div id="form">
       <div>
         <label for="firstName">Votre prénom : </label>
-        <input id="firstName" type="text" v-model=account.firstName></div>
+        <input id="firstName" type="text" v-model=firstName></div>
       <div>
         <label for="lastName">Votre nom : </label>
-        <input type="text" id="lastName" v-model=account.lastName>
+        <input type="text" id="lastName" v-model=lastName>
       </div>
       <div>
         <label for="pseudo">Votre pseudo : </label>
-        <input type="text" id="pseudo" v-model=account.pseudo>
+        <input type="text" id="pseudo" v-model=pseudo>
       </div>
       <div>
         <label for="email">Votre E-mail : </label>
-        <input type="email" id="email" v-model=account.email>
+        <input type="email" id="email" v-model=email>
       </div>
       <div>
         <label for="password">Votre mot de passe : </label>
-        <input type="password" id="password" v-model=account.password>
+        <input type="password" id="password" v-model=password>
       </div>
       <input id="submit" type="submit" @click=sendAccount()>
     </div>
-    <p>{{ account }}</p>
-    <p>{{ errormsg.message }}</p>
-
-
   </div>
 </template>
 
@@ -37,7 +33,13 @@ import vuex from "vuex"
 export default {
   store: store,
   data() {
-    return {}
+    return {
+      firstName: "",
+      lastName: "",
+      pseudo: "",
+      email: "",
+      password: ""
+    }
   },
   methods: {
     ...vuex.mapActions({
@@ -45,18 +47,17 @@ export default {
     }),
     sendAccount() {
       this.signup({
-        firstName: this.account.firstName,
-        lastName: this.account.lastName,
-        pseudo: this.account.pseudo,
-        email: this.account.email,
-        password: this.account.password
+        firstName: this.firstName,
+        lastName: this.lastName,
+        pseudo: this.pseudo,
+        email: this.email,
+        password: this.password
       })
     }
   },
   computed: {
     ...vuex.mapGetters([
-      'account',
-      'errormsg'
+      'account'
     ])
   },
   beforeRouteEnter(route, from, next) {

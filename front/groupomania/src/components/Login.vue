@@ -12,17 +12,14 @@
       </div>
       <input id="submit" type="submit" @click=sendlog()>
     </div>
-    <p>{{ errormsg.message }}</p>
   </div>
 </template>
 
 <script>
-//import vue from "vue"
-import store from "../store/index"
+import store from "@/store";
 import vuex from "vuex"
 
 export default {
-  store: store,
   data() {
     return {}
   },
@@ -33,14 +30,12 @@ export default {
 
     sendlog() {
       this.login({"pseudo": this.login.pseudo, "password": this.login.password})
-      //location.reload()
     }
 
   },
   computed: {
     ...vuex.mapGetters([
       'user',
-      'errormsg'
     ])
   },
   beforeRouteEnter(route, from, next) {

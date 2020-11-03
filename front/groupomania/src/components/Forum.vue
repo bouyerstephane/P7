@@ -2,16 +2,16 @@
   <div>
     <div id="head">
       <h1>Forum</h1>
-      <textarea name="addPost" id="addPost" cols="150" rows="10" v-model="post"
-                @keyup.enter="addPost({userId: user.userId, post})"></textarea>
-      <button @click="addPost({userId: user.userId, post})">Ajouter un message</button>
+      <textarea name="addPost" id="addPost" cols="150" rows="5" placeholder="Ajouter un message" v-model="post"
+                @keyup.enter="addPost({userId: user.userId, post}); post = '' "></textarea>
+      <button @click="addPost({userId: user.userId, post}); post = ''">Ajouter un message</button>
     </div>
 
     <div id="forum">
       <div v-for="post in forum.posts" v-bind:key="post.id" class="forum_content" @click="commentary(post.postId)">
         <p>{{ post.post }}</p>
-        <p>Ajouté par {{ post.pseudo }} le {{ post.date }}</p>
-        <p v-if="post.lastModif">Modifier le {{ post.lastModif }}</p>
+        <p>Ajouté par {{ post.pseudo }} le {{ post.formatedDate }}</p>
+        <p v-if="post.formatedLastModif">Modifier le {{ post.formatedLastModif }}</p>
         <button v-if="user.userId === post.userId || user.isAdmin === 1 "
                 @click.stop="destroy({userId: user.userId, postId: post.postId})">
           supprimer
