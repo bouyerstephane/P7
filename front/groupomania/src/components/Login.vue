@@ -1,16 +1,16 @@
 <template>
-  <div>
-    <h1>Connection</h1>
-    <div id="form">
+  <div id="login" class="row">
+    <h1 class="col-12">Connection</h1>
+    <div id="form" class="contenair">
       <div>
-        <label for="pseudo">Pseudo: </label>
+        <label for="pseudo">Pseudo</label>
         <input id="pseudo" type="text" v-model=login.pseudo @keyup.enter=sendlog() required>
       </div>
       <div>
-        <label for="password"> Mot de passe: </label>
+        <label for="password"> Mot de passe</label>
         <input id="password" type="password" v-model=login.password @keyup.enter=sendlog() required>
       </div>
-      <input id="submit" type="submit" @click=sendlog()>
+      <button @click=sendlog()>Connection</button>
     </div>
   </div>
 </template>
@@ -48,38 +48,7 @@ export default {
 }
 </script>
 
-
-<style scoped>
-
-#form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#form div {
-  display: flex;
-  justify-content: space-between;
-  width: 425px;
-  height: 25px;
-  margin-bottom: 5px;
-}
-
-#form div label {
-  color: #0024a0;
-  font-weight: bold;
-  width: 150px;
-  text-align: right;
-
-}
-
-#form div input {
-  width: 250px;
-}
-
-#submit {
-  width: 100px;
-}
+<style>
 
 
 </style>

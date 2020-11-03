@@ -1,5 +1,5 @@
 <template>
-  <div id="header">
+  <header class="row">
     <router-link to="/"><img src="../../public/icon-left-font-PS.png" alt="logo"></router-link>
 
     <div v-if='!user.userId' id="nav">
@@ -15,7 +15,7 @@
       <router-link @click.native="disconnect()" to="/">Déconnexion</router-link>
 
     </div>
-  </div>
+  </header>
 </template>
 
 <script>
@@ -44,31 +44,5 @@ export default {
 </script>
 
 <style>
-h1 {
-  color: #0024a0;
-}
 
-#header {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-}
-
-#header img {
-  width: 445px;
-}
-
-#nav {
-  padding: 30px;
-}
-
-#nav a {
-  font-weight: bold;
-  color: #FD2D01;
-}
-
-#nav a.router-link-exact-active {
-
-  color: #0024a0;
-}
 </style>

@@ -1,21 +1,28 @@
 <template>
-  <div>
-    <div id="head">
+  <div id="forum_commentary">
+    <div class="head">
       <h1>Commentaires</h1>
-      <div v-if="!editing">
-        <p>{{ forumCommentary.post.post }}</p>
-        <p>Ajouté par {{ forumCommentary.post.pseudo }} le {{ forumCommentary.post.formatedDate }}</p>
-        <p v-if="forumCommentary.post.formatedLastModif">Modifié le {{ forumCommentary.post.formatedLastModif }}</p>
+      <div class="body" v-if="!editing">
+        <div class="forum_content">
+          <p>{{ forumCommentary.post.post }}</p>
+          <p class="date">Ajouté par {{ forumCommentary.post.pseudo }} le {{ forumCommentary.post.formatedDate }}</p>
+          <p class="date" v-if="forumCommentary.post.formatedLastModif">Modifié le
+            {{ forumCommentary.post.formatedLastModif }}</p>
+        </div>
+
         <button v-if="user.userId === forumCommentary.post.userId || user.isAdmin === 1"
                 @click="editMessage(forumCommentary.post.post)">Modifier
         </button>
       </div>
-      <div v-else>
-        <input name="test" id="edit" v-model="forumCommentary.post.post"
-               @keyup.esc="resetMessage()" @keyup.enter="validEditMessage()">
+      <div class="body" v-else>
+        <div class="forum_content">
+        <textarea name="test" class="edit" rows="5" v-model="forumCommentary.post.post"
+                  @keyup.esc="resetMessage()" @keyup.enter="validEditMessage()"></textarea>
+        </div>
         <button @click="validEditMessage()">valider</button>
+        <button @click="resetMessage()">Annuler</button>
       </div>
-      <textarea name="addCommentary" id="" cols="30" rows="5" v-model="commentary"
+      <textarea name="addCommentary" rows="5" v-model="commentary"
                 placeholder="Ajouter un commentaire"
                 @keyup.enter="addCommentary({userId: user.userId, postId: $route.params.id.split(':')[1], commentary}); commentary ='' "></textarea>
       <button
@@ -25,29 +32,37 @@
     </div>
 
 
-    <div id="forum" v-for="commentary in forumCommentary.commentaries" :key="commentary.id">
-      <div v-if="editingCommentary !== commentary.commentaryId">
-        <p>{{ commentary.commentary }}</p>
-        <p>Ajouté par: {{ commentary.pseudo }} le {{ commentary.formatedDate }}</p>
-        <p v-if="commentary.formatedLastModif">Modifié le {{ commentary.formatedLastModif }}</p>
-        <button v-if="user.userId === commentary.userId || user.isAdmin === 1 "
-                @click.stop="destroy({userId: user.userId, commentaryId: commentary.commentaryId ,commentaryPostId: $route.params.id.split(':')[1]})">
-          supprimer
-        </button>
-        <button v-if="user.userId === commentary.userId || user.isAdmin === 1 "
-                @click="editCommentary(commentary.commentary, commentary.commentaryId)">Modifier
-        </button>
-
+    <div class="body" id="forum" v-for="commentary in forumCommentary.commentaries" :key="commentary.id">
+      <div class="body" v-if="editingCommentary !== commentary.commentaryId">
+        <div class="forum_content">
+          <p>{{ commentary.commentary }}</p>
+          <p class="date">Ajouté par {{ commentary.pseudo }} le {{ commentary.formatedDate }}</p>
+          <p class="date" v-if="commentary.formatedLastModif">Modifié le {{ commentary.formatedLastModif }}</p>
+        </div>
+        <div>
+          <button v-if="user.userId === commentary.userId || user.isAdmin === 1 "
+                  @click.stop="destroy({userId: user.userId, commentaryId: commentary.commentaryId ,commentaryPostId: $route.params.id.split(':')[1]})">
+            supprimer
+          </button>
+          <button v-if="user.userId === commentary.userId || user.isAdmin === 1 "
+                  @click="editCommentary(commentary.commentary, commentary.commentaryId)">Modifier
+          </button>
+        </div>
 
       </div>
-      <div v-else>
-        <input name="test" id="edit" v-model="newCommentary"
-               @keyup.esc="editingCommentary = null"
-               @keyup.enter="validEditCommentary(commentary.commentaryId, newCommentary)">
-        <button
-            @click="validEditCommentary(commentary.commentaryId, newCommentary)">
-          valider
-        </button>
+
+      <div class="body" v-else>
+        <div class="forum_content">
+            <textarea class="edit" rows="5" v-model="newCommentary"
+                      @keyup.esc="editingCommentary = null"
+                      @keyup.enter="validEditCommentary(commentary.commentaryId, newCommentary)"></textarea>
+        </div>
+        <div>
+          <button @click="validEditCommentary(commentary.commentaryId, newCommentary)">Valider</button>
+          <button @click="editingCommentary = null">Annuler</button>
+        </div>
+
+
       </div>
 
     </div>
@@ -133,24 +148,5 @@ export default {
     }
   }
 }
-
 </script>
 
-<style>
-#head {
-  margin: 0 auto;
-  width: 80%;
-  display: flex;
-  flex-direction: column;
-}
-
-#head textarea {
-  margin: 0 auto;
-  width: 80%;
-}
-
-#head button {
-  margin: 10px auto 5px;
-  width: 10%;
-}
-</style>

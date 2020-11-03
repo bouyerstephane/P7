@@ -1,8 +1,12 @@
 <template>
-  <div id="footer">
+  <footer>
     <hr>
-    <p>footer</p>
-  </div>
+    <div>
+      <a href="mailto:contact@gmail.com">Contact</a>
+      <a href="#">Mentions légals</a>
+    </div>
+
+  </footer>
 </template>
 
 <script>
@@ -10,9 +14,4 @@ export default {}
 </script>
 
 <style>
-#footer p {
-  color: #0024a0;
-  font-weight: bold;
-
-}
 </style>

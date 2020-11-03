@@ -277,6 +277,9 @@ export default new Vuex.Store({
                 if (request.commentaryId) {
                     store.commit('EMPTYPOST')
                     store.dispatch('getCommentary', {userId: request.userId, postId: request.commentaryPostId})
+                } else {
+                    store.commit('EMPTYPOST')
+                    store.dispatch('getCommentary', {userId: request.userId, postId: request.postId})
                 }
                 console.log(res)
             }).catch(error => {

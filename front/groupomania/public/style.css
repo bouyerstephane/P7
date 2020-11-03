@@ -1,0 +1,181 @@
+html {
+    font-size: 62.5%;
+}
+
+body {
+    background-color: #d4d1d0;
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+    font-size: 2.5rem;
+}
+
+p {
+    color: black;
+}
+
+a {
+    font-weight: bold;
+}
+
+hr {
+    width: 80%;
+    border: solid #ff00005c 2px
+}
+
+#app {
+    margin: 20px auto;
+    width: 80%;
+}
+
+header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header img {
+    width: 80%;
+}
+
+#nav a.router-link-exact-active {
+    color: #0024a0;
+}
+
+h1 {
+    color: #0024a0;
+    font-weight: bold;
+    font-size: 4.6rem;
+}
+
+#login {
+    margin-top: 50px;
+    margin-bottom: 300px;
+}
+
+#form {
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+#form div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+label {
+    display: block;
+    max-width: 30%;
+    min-width: 300px;
+}
+
+input {
+    width: 30%;
+    min-width: 300px;
+    margin-bottom: 30px;
+}
+
+button {
+    border: #61619b solid 2px;
+    border-radius: 10px;
+    color: #0024a0;
+    margin: 10px;
+}
+
+input:focus, button:focus, textarea:focus {
+    outline: none;
+    border: #0024a0 2px solid;
+}
+
+.head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.head textarea {
+    width: 75%;
+    border: solid 1px black
+}
+
+.head textarea:focus {
+    border: #0024a0 2px solid;
+}
+
+#forum button {
+    margin-bottom: 15px;
+}
+
+#forum {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.forum_content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    background-color: #002bff21;
+    border-radius: 10px
+}
+
+.body {
+    margin-bottom: 40px;
+    width: 100%;
+}
+
+.date {
+    font-weight: bold;
+    font-style: italic;
+}
+
+.body:hover {
+    cursor: pointer;
+}
+
+#forum_commentary .edit {
+    background-color: #002bff00;
+    width: 100%;
+    border: #0024a0 3px solid;
+    border-radius: 10px;
+}
+
+
+.body label {
+    max-width: inherit;
+}
+
+footer {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+
+footer div {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+footer div:first-child {
+    text-align: left;
+}
+
+@media all and (max-width: 1431px) {
+    header {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+}

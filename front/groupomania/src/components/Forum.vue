@@ -1,22 +1,22 @@
 <template>
-  <div>
-    <div id="head">
+  <div id="forum">
+    <div class="head">
       <h1>Forum</h1>
-      <textarea name="addPost" id="addPost" cols="150" rows="5" placeholder="Ajouter un message" v-model="post"
+      <textarea rows="5" id="addPost" placeholder="Ajouter un message" v-model="post"
                 @keyup.enter="addPost({userId: user.userId, post}); post = '' "></textarea>
-      <button @click="addPost({userId: user.userId, post}); post = ''">Ajouter un message</button>
+      <button @click="addPost({userId: user.userId, post}); post = ''">Ajouter</button>
     </div>
 
-    <div id="forum">
-      <div v-for="post in forum.posts" v-bind:key="post.id" class="forum_content" @click="commentary(post.postId)">
+    <div class="body" v-for="post in forum.posts" v-bind:key="post.id" @click="commentary(post.postId)">
+      <div class="forum_content">
         <p>{{ post.post }}</p>
-        <p>Ajouté par {{ post.pseudo }} le {{ post.formatedDate }}</p>
-        <p v-if="post.formatedLastModif">Modifier le {{ post.formatedLastModif }}</p>
-        <button v-if="user.userId === post.userId || user.isAdmin === 1 "
-                @click.stop="destroy({userId: user.userId, postId: post.postId})">
-          supprimer
-        </button>
+        <p class="date">Ajouté par {{ post.pseudo }} le {{ post.formatedDate }}</p>
+        <p class="date" v-if="post.formatedLastModif">Modifier le {{ post.formatedLastModif }}</p>
       </div>
+      <button v-if="user.userId === post.userId || user.isAdmin === 1 "
+              @click.stop="destroy({userId: user.userId, postId: post.postId})">
+        supprimer
+      </button>
     </div>
   </div>
 </template>
@@ -72,45 +72,3 @@ export default {
 }
 </script>
 
-<style>
-#head {
-  margin: 0 auto;
-  width: 80%;
-  display: flex;
-  flex-direction: column;
-}
-
-#head textarea {
-  margin: 0 auto;
-  width: 80%;
-}
-
-#head button {
-  margin: 10px auto 5px;
-  width: 10%;
-}
-
-#forum {
-  margin: 0 auto;
-  width: 80%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-#forum .forum_content {
-  padding: 5px;
-  margin: 10px auto;
-  width: 80%;
-  border: solid #0024a0 1px;
-  box-shadow: #4e71ea 0px 0px 7px 1px;
-}
-
-#forum .forum_content:hover {
-  transition: 200ms;
-  transform: scale(1.02);
-  cursor: grab;
-}
-
-</style>

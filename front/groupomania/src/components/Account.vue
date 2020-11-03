@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="account">
     <h1>Informations utilisateur</h1>
     <div v-if="!editing">
       <p>Prénom : {{ getUser.firstName }}</p>
@@ -8,26 +8,30 @@
       <p>Email : {{ getUser.email }}</p>
       <button @click="editing = true">Modifier vos informations personnelles</button>
     </div>
-    <div v-else>
-      <label for="firstName">Prénom : </label>
-      <input @keyup.enter="sendModif()" id="firstName" type="text" v-model="getUser.firstName">
-      <label for="lastName">Nom : </label>
-      <input @keyup.enter="sendModif()" id="lastName" type="text" v-model="getUser.lastName">
-      <label for="pseudo">pseudo : </label>
-      <input @keyup.enter="sendModif()" id="pseudo" type="text" v-model="getUser.pseudo">
-      <label for="email">Email : </label>
-      <input @keyup.enter="sendModif()" id="email" type="text" v-model="getUser.email">
-      <label for="modifyPassword">Nouveau mot de passe : </label>
-      <input @keyup.enter="sendModif()" id="modifyPassword" type="text" v-model="modifyPassword">
-      <label for="oldPassword">Pour modifier, confirmer votre mot de passe : </label>
-      <input @keyup.enter="sendModif()" type="password" id="oldPassword" v-model="password">
+    <div class="body" v-else>
+      <div class="flex">
 
-      <button @click="sendModif()">Valider les modifications</button>
-      <button @click="editing = false; getUserAction(user.userId)">Annuler</button>
+      </div>
+      <label for="firstName">Prénom </label>
+      <input @keyup.enter="sendModif()" id="firstName" type="text" v-model="getUser.firstName">
+      <label for="lastName">Nom</label>
+      <input @keyup.enter="sendModif()" id="lastName" type="text" v-model="getUser.lastName">
+      <label for="pseudo">pseudo</label>
+      <input @keyup.enter="sendModif()" id="pseudo" type="text" v-model="getUser.pseudo">
+      <label for="email">Email</label>
+      <input @keyup.enter="sendModif()" id="email" type="text" v-model="getUser.email">
+      <label for="modifyPassword">Nouveau mot de passe</label>
+      <input @keyup.enter="sendModif()" id="modifyPassword" type="text" v-model="modifyPassword">
+      <label for="oldPassword">Pour modifier, confirmer votre mot de passe</label>
+      <input @keyup.enter="sendModif()" type="password" id="oldPassword" v-model="password">
+      <div>
+        <button @click="sendModif()">Valider les modifications</button>
+        <button @click="editing = false; getUserAction(user.userId)">Annuler</button>
+      </div>
+
     </div>
 
-    <div>
-      <h2>Supprimer le compte</h2>
+    <div class="body">
       <label for="password">Pour supprimer votre compte, veuillez confirmer votre mot de passe : </label>
       <input type="password" id="password" v-model="deletePasword"
              @keyup.enter="accountDelete({userId: user.userId, password: deletePasword})"><br>
@@ -88,6 +92,6 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 
 </style>

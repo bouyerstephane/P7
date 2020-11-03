@@ -1,27 +1,27 @@
 <template>
-  <div>
-    <h2>Créer un compte</h2>
+  <div id="signup">
+    <h1>Créer un compte</h1>
     <div id="form">
       <div>
-        <label for="firstName">Votre prénom : </label>
+        <label for="firstName">Votre prénom</label>
         <input id="firstName" type="text" v-model=firstName></div>
       <div>
-        <label for="lastName">Votre nom : </label>
+        <label for="lastName">Votre nom</label>
         <input type="text" id="lastName" v-model=lastName>
       </div>
       <div>
-        <label for="pseudo">Votre pseudo : </label>
+        <label for="pseudo">Votre pseudo</label>
         <input type="text" id="pseudo" v-model=pseudo>
       </div>
       <div>
-        <label for="email">Votre E-mail : </label>
+        <label for="email">Votre E-mail</label>
         <input type="email" id="email" v-model=email>
       </div>
       <div>
-        <label for="password">Votre mot de passe : </label>
+        <label for="password">Votre mot de passe</label>
         <input type="password" id="password" v-model=password>
       </div>
-      <input id="submit" type="submit" @click=sendAccount()>
+      <button @click=sendAccount()>Création</button>
     </div>
   </div>
 </template>
@@ -71,37 +71,4 @@ export default {
 </script>
 
 <style scoped>
-h2 {
-  color: #0024a0;
-}
-
-#form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#form div {
-  display: flex;
-  justify-content: space-between;
-  width: 500px;
-  height: 25px;
-  margin-bottom: 5px;
-}
-
-#form div label {
-  color: #0024a0;
-  font-weight: bold;
-  width: 215px;
-  text-align: right;
-
-}
-
-#form div input {
-  width: 250px;
-}
-
-#submit {
-  width: 100px;
-}
 </style>
